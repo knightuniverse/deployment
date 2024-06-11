@@ -1,0 +1,92 @@
+name: qfy-prod
+
+services:
+  oss.docker.internal:
+    image: "knightuniverse/qfy-oss:1.0"
+    extra_hosts:
+      - "api.docker.internal:host-gateway"
+      - "minio.docker.internal:host-gateway"
+    networks:
+      - qfy-prod
+    ports:
+      - 3000:80
+    volumes:
+      - ./oss.env:/app/.env
+      - ./oss.env:/app/.env.production
+    depends_on:
+      - minio
+      - redis
+
+  api.docker.internal:
+    image: 'knightuniverse/qfy-api:1.0'
+    extra_hosts:
+      - "mysql.docker.internal:host-gateway"
+    networks:
+      - qfy-prod
+    ports:
+      - 3001:80
+    volumes:
+      - ./api.env:/home/node/.env
+      - ./api.env:/home/node/.env.production
+    depends_on:
+      - redis
+      - mysql
+
+  mysql:
+    image: 'mysql:8.4'
+    environment:
+      MYSQL_ROOT_PASSWORD: dh1NVaJQuhpks1tc74GYdHwei6qaWY5m
+      MYSQL_DATABASE: lc_prod
+      MYSQL_USER: johndoe
+      MYSQL_PASSWORD: vdfmn7pw2u
+    networks:
+      - qfy-prod
+    ports:
+      - 3308:3306
+    restart: unless-stopped
+    volumes:
+      - qfy-mysql-data-prod:/var/lib/mysql
+
+  redis:
+    image: 'redis:alpine'
+    networks:
+      - qfy-prod
+    ports:
+      - 6380:6379
+    restart: unless-stopped
+    volumes:
+      - qfy-redis-data-prod:/data
+
+  minio:
+    image: quay.io/minio/minio
+    ports:
+      - 9000:9000 # api 端口
+      - 9001:9001 # 控制台端口
+    environment:
+      - MINIO_ROOT_USER=johndoe
+      - MINIO_ROOT_PASSWORD=2Dp1pFT9ehMaoefpPLq9VuXqJg7Fc8g8
+    networks:
+      - qfy-prod
+    volumes:
+      - qfy-minio-data-prod:/data
+    command: server /data --console-address ":9001"
+    restart: unless-stopped
+
+  nginx:
+    image: 'nginx'
+    ports:
+      - 8080:80
+    networks:
+      - qfy-prod
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+
+volumes:
+  qfy-mysql-data-prod:
+  qfy-redis-data-prod:
+  qfy-minio-data-prod:
+
+networks:
+  # The presence of these objects is sufficient to define them
+  qfy-prod:
+    name: qfy-prod
