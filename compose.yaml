@@ -9,7 +9,7 @@ services:
     networks:
       - qfy-prod
     ports:
-      - 3000:80
+      - 3000:3000
     volumes:
       - ./oss.env:/app/.env
       - ./oss.env:/app/.env.production
@@ -24,7 +24,7 @@ services:
     networks:
       - qfy-prod
     ports:
-      - 3001:80
+      - 3001:3001
     volumes:
       - ./api.env:/home/node/.env
       - ./api.env:/home/node/.env.production
