@@ -3,6 +3,7 @@ name: qfy-prod
 services:
   oss.docker.internal:
     image: "knightuniverse/qfy-oss:1.0"
+    pull_policy: always
     extra_hosts:
       - "api.docker.internal:host-gateway"
       - "minio.docker.internal:host-gateway"
@@ -19,6 +20,7 @@ services:
 
   api.docker.internal:
     image: 'knightuniverse/qfy-api:1.0'
+    pull_policy: always
     extra_hosts:
       - "mysql.docker.internal:host-gateway"
     networks:
